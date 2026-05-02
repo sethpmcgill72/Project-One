@@ -92,6 +92,10 @@ class Logic(QMainWindow, Ui_MainWindow):
                 score.setGeometry(input_x, y_coordinate, input_width, height)
                 score.setObjectName(self.INPUT_NAME)
                 score.textChanged.connect(lambda : self.AssignerDisplay.clear())
+                score.setPlaceholderText("Enter a # from 0-100")
+                font = QtGui.QFont()
+                font.setPointSize(8)
+                score.setFont(font)
                 score.show()
 
                 y_coordinate += y_increment
@@ -113,11 +117,11 @@ class Logic(QMainWindow, Ui_MainWindow):
             file = None
 
             if not os.path.exists("data.csv"): #file does not exist - create it, and append header row.
-                file = open("data.csv", "a", newline="")
+                file = open("data.csv", "a+", newline="")
                 writer = csv.writer(file)
                 writer.writerow(["Name", "Score One", "Score Two", "Score Three", "Score Four", "Final"])
 
-            file = open("data.csv", "a", newline="")
+            file = open("data.csv", "a+", newline="")
             writer = csv.writer(file)
 
             total = 0
