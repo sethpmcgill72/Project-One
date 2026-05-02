@@ -39,15 +39,15 @@ class Logic(QMainWindow, Ui_MainWindow):
         # --------------------
         self.stackedWidget.setCurrentIndex(self.ASSIGNER_WINDOW_INDEX)
 
-        self.AssignerSubmit.clicked.connect(lambda: self.setup_scores())
-        self.ScoreSubmit.clicked.connect(lambda : self.submit_scores())
-        self.ScoreClear.clicked.connect(lambda : self.clear_scores())
+        self.AssignerSubmit.clicked.connect(lambda: self.__setup_scores())
+        self.ScoreSubmit.clicked.connect(lambda : self.__submit_scores())
+        self.ScoreClear.clicked.connect(lambda : self.__clear_scores())
 
-        self.GPASubmit.clicked.connect(lambda: self.submit_gpa())
-        self.GPAClear.clicked.connect(lambda: self.clear_gpa_input())
+        self.GPASubmit.clicked.connect(lambda: self.__submit_gpa())
+        self.GPAClear.clicked.connect(lambda: self.__clear_gpa_input())
 
-        self.SwapToGPA.clicked.connect(lambda: self.swap_window())
-        self.SwapToAssigner.clicked.connect(lambda: self.swap_window())
+        self.SwapToGPA.clicked.connect(lambda: self.__swap_window())
+        self.SwapToAssigner.clicked.connect(lambda: self.__swap_window())
 
         self.StudentNameInput.textChanged.connect(lambda : self.AssignerDisplay.clear())
         self.AttemptsInput.textChanged.connect(lambda : self.AssignerDisplay.clear())
@@ -55,15 +55,15 @@ class Logic(QMainWindow, Ui_MainWindow):
         self.CreditsInput.textChanged.connect(lambda: self.GPADisplay.clear())
         self.LetterGradesInput.textChanged.connect(lambda: self.GPADisplay.clear())
 
-    def setup_scores(self) -> None:
+    def __setup_scores(self) -> None:
         """
         Dynamically creates score boxes and labels.
         """
         self.AssignerDisplay.clear()
-        self.clear_scores()
+        self.__clear_scores()
 
         try:
-            self.validate_assigner_input()
+            self.__validate_assigner_input()
 
         except Exception as error:
             self.AssignerDisplay.setText(str(error))
@@ -96,14 +96,14 @@ class Logic(QMainWindow, Ui_MainWindow):
 
                 y_coordinate += y_increment
 
-    def submit_scores(self) -> None:
+    def __submit_scores(self) -> None:
         """
         Writes scores and student name to a CSV file.
         """
         self.AssignerDisplay.clear()
 
         try:
-            self.validate_scores()
+            self.__validate_scores()
 
         except Exception as error:
             self.AssignerDisplay.setText(str(error))
@@ -141,7 +141,7 @@ class Logic(QMainWindow, Ui_MainWindow):
             self.AssignerDisplay.setText("Data saved to CSV file (named data.csv)!")
             self.AssignerDisplay.setStyleSheet(self.GOOD_COLOR)
 
-    def validate_assigner_input(self) -> None:
+    def __validate_assigner_input(self) -> None:
         """
         Validates student name and number of scores.
         """
@@ -163,7 +163,7 @@ class Logic(QMainWindow, Ui_MainWindow):
         if self.__attempt_count < self.MINIMUM_ATTEMPTS or self.__attempt_count > self.MAXIMUM_ATTEMPTS:
             raise ValueError("Attempts must be between 1 and 4, inclusive.")
 
-    def validate_scores(self) -> None:
+    def __validate_scores(self) -> None:
         """
         Check that all scores are valid (numeric, not empty, in the range of [0, 100]).
         """
@@ -189,12 +189,13 @@ class Logic(QMainWindow, Ui_MainWindow):
 
                 self.__scores.append(float(score))
 
-    def clear_scores(self) -> None:
+    def __clear_scores(self) -> None:
         """
         Removes score widgets and hides score buttons.
         """
         self.ScoreSubmit.hide()
         self.ScoreClear.hide()
+        self.AssignerDisplay.clear()
         self.__scores = []
 
         for widget in self.AssignerWindow.children(): # all widgets in the assigner window are its children.
@@ -204,7 +205,7 @@ class Logic(QMainWindow, Ui_MainWindow):
             if name == self.INPUT_NAME or name == self.LABEL_NAME:
                 widget.deleteLater()
 
-    def submit_gpa(self) -> None:
+    def __submit_gpa(self) -> None:
         """
         Calculates grade point average of all classes.
         GPA = sum of (class credit * class grade on GPA scale) / total credits
@@ -212,7 +213,7 @@ class Logic(QMainWindow, Ui_MainWindow):
         self.GPADisplay.clear()  # clear error or previous GPA display.
 
         try:
-            self.validate_gpa_input()
+            self.__validate_gpa_input()
 
         except Exception as error:
             self.GPADisplay.setText(str(error))
@@ -236,7 +237,7 @@ class Logic(QMainWindow, Ui_MainWindow):
                                     "input fields and enter extra data!")
             self.GPADisplay.setStyleSheet(self.GOOD_COLOR)
 
-    def validate_gpa_input(self) -> None:
+    def __validate_gpa_input(self) -> None:
         """
         Checks for valid input in the GPA Calculator window. Throws errors otherwise,
         to be displayed to the user.
@@ -261,10 +262,10 @@ class Logic(QMainWindow, Ui_MainWindow):
                 raise ValueError("Please provide a list of valid grades (A, B, C, D, or F).")
 
         for credit in self.__credits:  # validate each credit - cannot be negative, float, or non-numeric.
-            if not credit.isdigit or int(credit) < self.MINIMUM_SCORE:
+            if not credit.isdigit() or int(credit) < self.MINIMUM_SCORE:
                 raise ValueError("Credits must be positive whole numbers or zero.")
 
-    def clear_gpa_input(self) -> None:
+    def __clear_gpa_input(self) -> None:
         """
         Clears input fields and error/grade display boxes in the GPA Calculator window when pressing clear.
         """
@@ -272,14 +273,19 @@ class Logic(QMainWindow, Ui_MainWindow):
         self.LetterGradesInput.clear()
         self.GPADisplay.clear()
 
-    def swap_window(self) -> None:
+    def __clear_assigner_input(self):
+        self.StudentNameInput.clear()
+        self.AttemptsInput.clear()
+
+    def __swap_window(self) -> None:
         """
         Swaps between GPA Calculator and Grade Assigner windows. Clears pages before moving on.
         """
         if self.stackedWidget.currentIndex() == self.ASSIGNER_WINDOW_INDEX:
-            self.clear_scores()
+            self.__clear_scores()
+            self.__clear_assigner_input()
             self.stackedWidget.setCurrentIndex(self.GPA_WINDOW_INDEX)
 
         else:
-            self.clear_gpa_input()
+            self.__clear_gpa_input()
             self.stackedWidget.setCurrentIndex(self.ASSIGNER_WINDOW_INDEX)
